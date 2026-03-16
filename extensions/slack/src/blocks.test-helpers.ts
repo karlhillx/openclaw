@@ -28,6 +28,7 @@ export function installSlackBlockTestMocks() {
       botTokenSource: "config",
       config: {},
     }),
+    listSlackAccountIds: () => ["default"],
   }));
 }
 

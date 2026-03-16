@@ -1,4 +1,7 @@
-import { type ChannelOnboardingDmPolicy } from "../../../src/channels/plugins/onboarding-types.js";
+import {
+  type ChannelOnboardingAdapter,
+  type ChannelOnboardingDmPolicy,
+} from "../../../src/channels/plugins/onboarding-types.js";
 import {
   patchChannelConfigForAccount,
   promptResolvedAllowFrom,
@@ -11,8 +14,12 @@ import {
   applyAccountNameToChannelSection,
   migrateBaseNameToDefaultAccount,
 } from "../../../src/channels/plugins/setup-helpers.js";
-import { type ChannelSetupWizard } from "../../../src/channels/plugins/setup-wizard.js";
+import {
+  buildChannelOnboardingAdapterFromSetupWizard,
+  type ChannelSetupWizard,
+} from "../../../src/channels/plugins/setup-wizard.js";
 import type { ChannelSetupAdapter } from "../../../src/channels/plugins/types.adapters.js";
+import { getChatChannelMeta } from "../../../src/channels/registry.js";
 import { formatCliCommand } from "../../../src/cli/command-format.js";
 import type { OpenClawConfig } from "../../../src/config/config.js";
 import { hasConfiguredSecretInput } from "../../../src/config/types.secrets.js";
@@ -284,3 +291,25 @@ export const telegramSetupWizard: ChannelSetupWizard = {
   dmPolicy,
   disable: (cfg) => setOnboardingChannelEnabled(cfg, channel, false),
 };
+
+const telegramSetupPlugin = {
+  id: channel,
+  meta: {
+    ...getChatChannelMeta(channel),
+    quickstartAllowFrom: true,
+  },
+  config: {
+    listAccountIds: listTelegramAccountIds,
+    resolveAccount: (cfg: OpenClawConfig, accountId?: string | null) =>
+      resolveTelegramAccount({ cfg, accountId }),
+    resolveAllowFrom: ({ cfg, accountId }: { cfg: OpenClawConfig; accountId?: string | null }) =>
+      resolveTelegramAccount({ cfg, accountId }).config.allowFrom,
+  },
+  setup: telegramSetupAdapter,
+} as const;
+
+export const telegramOnboardingAdapter: ChannelOnboardingAdapter =
+  buildChannelOnboardingAdapterFromSetupWizard({
+    plugin: telegramSetupPlugin,
+    wizard: telegramSetupWizard,
+  });

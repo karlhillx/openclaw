@@ -1,7 +1,7 @@
-import { discordOnboardingAdapter } from "../../../extensions/discord/src/onboarding.js";
+import { discordOnboardingAdapter } from "../../../extensions/discord/src/setup-surface.js";
 import { imessageOnboardingAdapter } from "../../../extensions/imessage/src/onboarding.js";
 import { signalOnboardingAdapter } from "../../../extensions/signal/src/onboarding.js";
-import { slackOnboardingAdapter } from "../../../extensions/slack/src/onboarding.js";
+import { slackOnboardingAdapter } from "../../../extensions/slack/src/setup-surface.js";
 import { telegramOnboardingAdapter } from "../../../extensions/telegram/src/setup-surface.js";
 import { whatsappOnboardingAdapter } from "../../../extensions/whatsapp/src/onboarding.js";
 import { listChannelSetupPlugins } from "../../channels/plugins/setup-registry.js";
