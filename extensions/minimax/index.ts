@@ -1,46 +1,31 @@
-import { emptyPluginConfigSchema, type OpenClawPluginApi } from "openclaw/plugin-sdk/core";
-import { buildMinimaxProvider } from "../../src/agents/models-config.providers.static.js";
-import { fetchMinimaxUsage } from "../../src/infra/provider-usage.fetch.js";
+import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
+import {
+  buildMinimaxImageGenerationProvider,
+  buildMinimaxPortalImageGenerationProvider,
+} from "./image-generation-provider.js";
+import {
+  minimaxMediaUnderstandingProvider,
+  minimaxPortalMediaUnderstandingProvider,
+} from "./media-understanding-provider.js";
+import { buildMinimaxMusicGenerationProvider } from "./music-generation-provider.js";
+import { registerMinimaxProviders } from "./provider-registration.js";
+import { buildMinimaxSpeechProvider } from "./speech-provider.js";
+import { createMiniMaxWebSearchProvider } from "./src/minimax-web-search-provider.js";
+import { buildMinimaxVideoGenerationProvider } from "./video-generation-provider.js";
 
-const PROVIDER_ID = "minimax";
-
-const minimaxPlugin = {
-  id: PROVIDER_ID,
-  name: "MiniMax Provider",
-  description: "Bundled MiniMax provider plugin",
-  configSchema: emptyPluginConfigSchema(),
-  register(api: OpenClawPluginApi) {
-    api.registerProvider({
-      id: PROVIDER_ID,
-      label: "MiniMax",
-      docsPath: "/providers/minimax",
-      envVars: ["MINIMAX_API_KEY"],
-      auth: [],
-      catalog: {
-        order: "simple",
-        run: async (ctx) => {
-          const apiKey = ctx.resolveProviderApiKey(PROVIDER_ID).apiKey;
-          if (!apiKey) {
-            return null;
-          }
-          return {
-            provider: {
-              ...buildMinimaxProvider(),
-              apiKey,
-            },
-          };
-        },
-      },
-      resolveUsageAuth: async (ctx) => {
-        const apiKey = ctx.resolveApiKeyFromConfigAndStore({
-          envDirect: [ctx.env.MINIMAX_CODE_PLAN_KEY, ctx.env.MINIMAX_API_KEY],
-        });
-        return apiKey ? { token: apiKey } : null;
-      },
-      fetchUsageSnapshot: async (ctx) =>
-        await fetchMinimaxUsage(ctx.token, ctx.timeoutMs, ctx.fetchFn),
-    });
+export default definePluginEntry({
+  id: "minimax",
+  name: "MiniMax",
+  description: "Bundled MiniMax API-key and OAuth provider plugin",
+  register(api) {
+    registerMinimaxProviders(api);
+    api.registerMediaUnderstandingProvider(minimaxMediaUnderstandingProvider);
+    api.registerMediaUnderstandingProvider(minimaxPortalMediaUnderstandingProvider);
+    api.registerImageGenerationProvider(buildMinimaxImageGenerationProvider());
+    api.registerImageGenerationProvider(buildMinimaxPortalImageGenerationProvider());
+    api.registerMusicGenerationProvider(buildMinimaxMusicGenerationProvider());
+    api.registerVideoGenerationProvider(buildMinimaxVideoGenerationProvider());
+    api.registerSpeechProvider(buildMinimaxSpeechProvider());
+    api.registerWebSearchProvider(createMiniMaxWebSearchProvider());
   },
-};
-
-export default minimaxPlugin;
+});
